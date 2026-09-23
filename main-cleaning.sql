@@ -67,3 +67,35 @@ FROM layoffs_staging2
 WHERE row_num > 1;
 
 -- 3. DATA STANDARDIZATION
+SELECT -- Checking for whitespaces
+	company, 
+	TRIM(company)
+FROM layoffs_staging2;
+
+UPDATE layoffs_staging2
+SET company = TRIM(company); -- Trim whitespaces
+
+SELECT DISTINCT -- Checking for irregularities 
+	industry
+FROM layoffs_staging2
+ORDER BY 1;
+
+UPDATE layoffs_staging2 -- Update similar industry names (Crypto Currency to Crypto)
+SET industry = 'Crypto'
+WHERE industry LIKE 'Crypto%';
+
+SELECT DISTINCT location FROM layoffs_staging2 ORDER BY 1; -- No issues
+
+SELECT DISTINCT country FROM layoffs_staging2 ORDER BY 1; -- `United States` and `United States.` found
+
+UPDATE layoffs_staging2
+SET country = TRIM(TRAILING '.' FROM country) -- Remove trailing unwanted symbols
+WHERE country LIKE 'United States%';
+
+DESC layoffs_staging2; -- `date` is in TEXT
+
+UPDATE layoffs_staging2 -- Convert from string to standard date format
+SET `date` = STR_TO_DATE(`date`, '%m/%d/%Y');
+
+ALTER TABLE layoffs_staging2
+MODIFY COLUMN `date` DATE; -- Data type conversion
